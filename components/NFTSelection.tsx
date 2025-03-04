@@ -15,7 +15,7 @@ const mockNFTs = [
 ];
 
 export default function NFTSelection() {
-  const { user, traderAddress } = useMainStore();
+  const { user, traderAddress, setTraderAddress } = useMainStore();
 
   const [selectedNFT, setSelectedNFT] = useState<(typeof mockNFTs)[0] | null>(null);
   const [otherUserNFT, setOtherUserNFT] = useState<(typeof mockNFTs)[0] | null>(null);
@@ -28,7 +28,10 @@ export default function NFTSelection() {
     setSelectedNFT(mockNFTs[Math.floor(Math.random() * mockNFTs.length)]);
   };
   const confirmTrade = () => {};
+  const agreeTrade = () => setHasAgreed(true);
+  const abortTrade = () => setTraderAddress('');
 
+  // Temp function
   useEffect(() => {
     setHasAgreed(false);
 
@@ -42,7 +45,7 @@ export default function NFTSelection() {
 
   return (
     <div className='flex flex-col gap-4 w-full max-w-4xl mx-auto'>
-      <div className='flex flex-col sm:flex-row gap-4 w-full max-w-4xl mx-auto'>
+      <div className='flex flex-col sm:flex-row gap-4 w-full max-w-4xl mx-auto mb-3 sm:mb-0 '>
         {/* User's NFT selection */}
         <Card className='flex flex-col p-3 w-full shadow-lg dark:border-slate-700 dark:bg-slate-900'>
           <CardHeader className='border-b mb-3 !p-0'>
@@ -58,7 +61,7 @@ export default function NFTSelection() {
               <div className='text-xs text-gray-500'>{user?.address ?? '0x12345'}</div>
             </div>
           </CardHeader>
-          <CardContent className='flex flex-col items-center justify-center md:aspect-square !p-0'>
+          <CardContent className='flex flex-col items-center justify-center sm:aspect-square !p-0'>
             {selectedNFT ? (
               <div className='text-center'>
                 <Image
@@ -72,7 +75,7 @@ export default function NFTSelection() {
               </div>
             ) : (
               <button
-                className='border-4 border-dashed rounded-md w-full h-full flex flex-col items-center justify-center'
+                className='border-4 border-dashed rounded-md w-full h-full flex flex-col items-center justify-center  min-h-[100px]'
                 onClick={selectOwnNFT}
               >
                 <p className='text-slate-500 dark:text-slate-400'>No NFT selected</p>
@@ -89,7 +92,7 @@ export default function NFTSelection() {
               <div className='text-xs text-gray-500'>{traderAddress}</div>
             </div>
           </CardHeader>
-          <CardContent className='flex flex-col items-center justify-center md:aspect-square !p-0'>
+          <CardContent className='flex flex-col items-center justify-center sm:aspect-square min-h-[100px] !p-0'>
             {otherUserNFT ? (
               <div className='text-center'>
                 <Image
@@ -114,15 +117,22 @@ export default function NFTSelection() {
           <Button
             disabled={!selectedNFT || !otherUserNFT}
             onClick={confirmTrade}
-            className='w-fit sm:w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
+            className='w-fit sm:w-full !bg-green-700 hover:!bg-green-700/80 font-bold py-2 px-4 rounded-full shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
           >
             <span>Confirm Trade</span>
           </Button>
         ) : (
-          <Button className='w-fit sm:w-full' disabled={!selectedNFT || !otherUserNFT} onClick={() => setHasAgreed(true)}>
+          <Button className='w-fit sm:w-full' disabled={!selectedNFT || !otherUserNFT} onClick={agreeTrade}>
             Agree to this Trade
           </Button>
         )}
+      </div>
+
+      <hr />
+      <div className='flex justify-center'>
+        <Button variant='ghost' className='w-fit sm:w-full text-gray-400 hover:text-white' onClick={abortTrade}>
+          <span>Abort trade</span>
+        </Button>
       </div>
     </div>
   );

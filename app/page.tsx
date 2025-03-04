@@ -10,9 +10,17 @@ export default function Home() {
 
   if (!user) return <LoginPage />;
   return (
-    <main className='container flex flex-col mx-auto px-4 py-8 h-screen w-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900'>
-      <h1 className='text-4xl font-bold mb-6'>Ronin NFT Trading</h1>
-      {traderAddress ? <Swap /> : <SwapCode />}
-    </main>
+    <div className='flex flex-col justify-between px-4 pt-8 h-screen w-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-x-hidden'>
+      <main className='container flex flex-col mx-auto gap-4'>
+        <h1 className='text-4xl font-bold mb-16 sm:mb-3'>Ronin NFT Trading</h1>
+        {traderAddress ? <Swap /> : <SwapCode />}
+      </main>
+      <footer className='mb-1 text-[8pt] text-center'>
+        <span>Made with {'🍕'} by </span>
+        <a href='https://jeramai.github.io' target='_blank'>
+          Jeram.ai
+        </a>
+      </footer>
+    </div>
   );
 }
