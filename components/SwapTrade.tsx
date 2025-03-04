@@ -3,7 +3,7 @@ import useMainStore from '@/hooks/use-store';
 import { Suspense } from 'react';
 import NFTSelection from './NFTSelection';
 
-export default function SwapConnect() {
+export default function SwapTrade() {
   const { traderAddress } = useMainStore();
 
   return (

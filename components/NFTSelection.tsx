@@ -3,7 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useMainStore from '@/hooks/use-store';
-import { RotateCcw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -16,10 +17,15 @@ const mockNFTs = [
 
 export default function NFTSelection() {
   const { user, traderAddress, setTraderAddress } = useMainStore();
+  const { toast } = useToast();
 
   const [selectedNFT, setSelectedNFT] = useState<(typeof mockNFTs)[0] | null>(null);
   const [otherUserNFT, setOtherUserNFT] = useState<(typeof mockNFTs)[0] | null>(null);
+
   const [hasAgreed, setHasAgreed] = useState(false);
+  const [otherHasAgreed, setOtherHasAgreed] = useState(false);
+  const [hasConfirmed, setHasConfirmed] = useState(false);
+  const [otherHasConfirmed, setOtherHasConfirmed] = useState(false);
 
   const resetOwnNFT = () => {
     setSelectedNFT(null);
@@ -27,13 +33,14 @@ export default function NFTSelection() {
   const selectOwnNFT = () => {
     setSelectedNFT(mockNFTs[Math.floor(Math.random() * mockNFTs.length)]);
   };
-  const confirmTrade = () => {};
+  const confirmTrade = () => setHasConfirmed(true);
   const agreeTrade = () => setHasAgreed(true);
   const abortTrade = () => setTraderAddress('');
 
-  // Temp function
+  // Temp functions
   useEffect(() => {
     setHasAgreed(false);
+    setHasConfirmed(false);
 
     if (selectedNFT) {
       const t = setTimeout(() => {
@@ -42,6 +49,43 @@ export default function NFTSelection() {
       return () => clearTimeout(t);
     }
   }, [selectedNFT]);
+  useEffect(() => {
+    setOtherHasAgreed(false);
+    if (hasAgreed) {
+      const t = setTimeout(() => setOtherHasAgreed(true), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [hasAgreed]);
+  useEffect(() => {
+    setOtherHasConfirmed(false);
+    if (hasConfirmed) {
+      const t = setTimeout(() => setOtherHasConfirmed(true), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [hasConfirmed]);
+
+  // Real functions
+  // On selected NFT change, reset values
+  useEffect(() => {
+    if (selectedNFT) console.log('Selected NFT:', selectedNFT);
+
+    setHasAgreed(false);
+    setHasConfirmed(false);
+  }, [selectedNFT]);
+
+  // Action for when both parties confirm the trade
+  useEffect(() => {
+    if (hasConfirmed && otherHasConfirmed) {
+      toast({
+        title: 'Trade confirmed!',
+        description: 'The trade has been confirmed by both parties and will now be processed.',
+        duration: 3000
+      });
+
+      setSelectedNFT(null);
+      setOtherUserNFT(null);
+    }
+  }, [hasConfirmed, otherHasConfirmed]);
 
   return (
     <div className='flex flex-col gap-4 w-full max-w-4xl mx-auto'>
@@ -113,7 +157,20 @@ export default function NFTSelection() {
 
       {/* Confirm trade button */}
       <div className='flex justify-end'>
-        {hasAgreed ? (
+        {hasAgreed && !otherHasAgreed ? (
+          <Button className='w-fit sm:w-full' disabled={true}>
+            <Loader2 className='animate-spin' />
+            <span>Waiting for other trader</span>
+          </Button>
+        ) : hasConfirmed && !otherHasConfirmed ? (
+          <Button
+            disabled={true}
+            className='w-fit sm:w-full !bg-green-700 hover:!bg-green-700/80 font-bold py-2 px-4 rounded-full shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            <Loader2 className='animate-spin' />
+            <span>Waiting for other trader</span>
+          </Button>
+        ) : hasAgreed && otherHasAgreed ? (
           <Button
             disabled={!selectedNFT || !otherUserNFT}
             onClick={confirmTrade}

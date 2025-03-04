@@ -10,6 +10,9 @@ export default function LoginPage() {
   const { setUser } = useMainStore();
   const [countdown, setCountdown] = useState(43);
 
+  const loginWithWaypoint = () => setUser({ address: '0xwaypoint', signature: '0x1234567890' });
+  const loginWithWallet = () => setUser({ address: '0xwallet', signature: '0x1234567890' });
+
   useEffect(() => {
     const timer = setTimeout(() => {
       let newCountdown = countdown - 1;
@@ -30,12 +33,15 @@ export default function LoginPage() {
 
         <button
           className='w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-full mb-3'
-          onClick={() => setUser('Jeramai')}
+          onClick={loginWithWaypoint}
         >
           Login with Ronin Waypoint
         </button>
 
-        <button className='w-full bg-gray-800/50 hover:bg-gray-700/50 text-white font-medium py-3 px-4 rounded-full border border-gray-700 mb-6'>
+        <button
+          className='w-full bg-gray-800/50 hover:bg-gray-700/50 text-white font-medium py-3 px-4 rounded-full border border-gray-700 mb-6'
+          onClick={loginWithWallet}
+        >
           Connect with Ronin Wallet
         </button>
 

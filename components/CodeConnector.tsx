@@ -3,8 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
 import useMainStore from '@/hooks/use-store';
+import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
