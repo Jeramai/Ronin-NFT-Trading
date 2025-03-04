@@ -1,8 +1,8 @@
 'use client';
 
 import LoginPage from '@/components/LoginPage';
-import Swap from '@/components/Swap';
 import SwapCode from '@/components/SwapCode';
+import SwapConnect from '@/components/SwapConnect';
 import useMainStore from '@/hooks/use-store';
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
     <div className='flex flex-col justify-between px-4 pt-8 h-screen w-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-x-hidden'>
       <main className='container flex flex-col mx-auto gap-4'>
         <h1 className='text-4xl font-bold mb-16 sm:mb-3'>Ronin NFT Trading</h1>
-        {traderAddress ? <Swap /> : <SwapCode />}
+        {traderAddress ? <SwapConnect /> : <SwapCode />}
       </main>
       <footer className='mb-1 text-[8pt] text-center'>
         <span>Made with {'🍕'} by </span>

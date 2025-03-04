@@ -132,7 +132,7 @@ export default function CodeConnector() {
         {isConnected ? (
           <div className='bg-green-50 p-4 rounded-md border border-green-200 dark:bg-green-900/20 dark:border-green-800'>
             <h3 className='font-medium text-green-800 dark:text-green-400'>Connected to user</h3>
-            <p className='text-green-700 dark:text-green-300 font-mono'>{connectedTo}</p>
+            <code className='text-green-700 dark:text-green-300'>{connectedTo}</code>
 
             <div className='flex gap-2 mt-2'>
               <Button
@@ -168,7 +168,7 @@ export default function CodeConnector() {
       </CardContent>
       <CardFooter className='text-xs text-slate-500 justify-center'>
         {isConnected
-          ? "You're now connected. Any messages would appear here."
+          ? "You're connected to another user. You can now start trading."
           : "Enter someone's code to establish a connection."}
       </CardFooter>
     </Card>
