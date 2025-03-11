@@ -17,7 +17,7 @@ export default function Home() {
           <h1 className='text-4xl font-bold mb-16 sm:mb-3'>Ronin NFT Trading</h1>
           <LogoutButton />
         </div>
-        {traderAddress ? <SwapTrade /> : <SwapCode />}
+        {!traderAddress ? <SwapTrade /> : <SwapCode />}
       </main>
       <footer className='mb-1 text-[8pt] text-center'>
         <span>Made with {'🍕'} by </span>

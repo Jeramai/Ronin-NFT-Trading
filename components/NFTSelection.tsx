@@ -9,28 +9,23 @@ import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import FirebaseHandler from './firebase/SwapHandler';
-
-// Mock NFT data
-const mockNFTs = [
-  { id: 1, name: 'Cool Cat #1', image: '/placeholder.svg?height=300&width=300' },
-  { id: 2, name: 'Bored Ape #42', image: '/placeholder.svg?height=300&width=300' },
-  { id: 3, name: 'Crypto Punk #007', image: '/placeholder.svg?height=300&width=300' }
-];
+import NFTPicker from './NFTPicker';
 
 export default function NFTSelection() {
   const { user, sessionCode, traderAddress, setTraderAddress } = useMainStore();
 
-  const [selectedNFT, setSelectedNFT] = useState<(typeof mockNFTs)[0] | null>(null);
-  const [otherUserNFT, setOtherUserNFT] = useState<(typeof mockNFTs)[0] | null>(null);
+  const [selectedNFT, setSelectedNFT] = useState<any>(null);
+  const [otherUserNFT, setOtherUserNFT] = useState<any>(null);
+
+  const [showNFTPicker, setShowNFTPicker] = useState<boolean>(false);
 
   const [hasAgreed, setHasAgreed] = useState(false);
   const [otherHasAgreed, setOtherHasAgreed] = useState(false);
   const [hasConfirmed, setHasConfirmed] = useState(false);
   const [otherHasConfirmed, setOtherHasConfirmed] = useState(false);
 
-  const selectOwnNFT = async () => {
-    const _selectedNFT = mockNFTs[Math.floor(Math.random() * mockNFTs.length)];
-    setSelectedNFT(_selectedNFT);
+  const selectOwnNFT = async (nftData: any) => {
+    setSelectedNFT(nftData);
 
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
     const querySnapshot = await getDocs(userQuery);
@@ -42,11 +37,11 @@ export default function NFTSelection() {
     // Check if user is the host or guest
     if (user?.connectedAddress === docData.userA) {
       await updateDoc(docRef, {
-        userANFT: _selectedNFT
+        userANFT: nftData
       });
     } else {
       await updateDoc(docRef, {
-        userBNFT: _selectedNFT
+        userBNFT: nftData
       });
     }
 
@@ -181,7 +176,7 @@ export default function NFTSelection() {
               ) : (
                 <button
                   className='border-4 border-dashed rounded-md w-full h-full flex flex-col items-center justify-center  min-h-[100px]'
-                  onClick={selectOwnNFT}
+                  onClick={() => setShowNFTPicker(true)}
                 >
                   <p className='text-slate-500 dark:text-slate-400'>No NFT selected</p>
                 </button>
@@ -253,6 +248,8 @@ export default function NFTSelection() {
           </Button>
         </div>
       </div>
+
+      <NFTPicker show={showNFTPicker} onHide={() => setShowNFTPicker(false)} onConfirm={selectOwnNFT} />
 
       <FirebaseHandler
         setOtherUserNFT={setOtherUserNFT}
