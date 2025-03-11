@@ -18,7 +18,7 @@ const mockNFTs = [
 ];
 
 export default function NFTSelection() {
-  const { user, sessionCode, traderAddress } = useMainStore();
+  const { user, sessionCode, traderAddress, setTraderAddress } = useMainStore();
 
   const [selectedNFT, setSelectedNFT] = useState<(typeof mockNFTs)[0] | null>(null);
   const [otherUserNFT, setOtherUserNFT] = useState<(typeof mockNFTs)[0] | null>(null);
@@ -136,6 +136,7 @@ export default function NFTSelection() {
     setOtherHasAgreed(false);
     setHasConfirmed(false);
     setOtherHasConfirmed(false);
+    setTraderAddress(null);
   };
   const onBothConfirm = () => {
     setSelectedNFT(null);
