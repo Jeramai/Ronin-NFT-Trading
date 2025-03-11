@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 interface User {
   connectedAddress: string;
   userAddresses: string[];
+  approvedAddresses: string[];
   currentChainId: number;
 }
 interface MainStorage {
