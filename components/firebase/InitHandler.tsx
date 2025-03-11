@@ -30,7 +30,7 @@ export default function FirebaseHandler({
   setAIsReady,
   setBIsReady
 }: Readonly<FirebaseHandlerProps>) {
-  const { user, setTraderAddress } = useMainStore();
+  const { user, setTraderAddress, setSessionCode } = useMainStore();
   const { toast } = useToast();
 
   // Helper functions to handle different states
@@ -98,6 +98,7 @@ export default function FirebaseHandler({
     setAIsReady(data.userAReady);
     setBIsReady(data.userBReady);
     if (data.userAReady && data.userBReady) {
+      setSessionCode(data.code);
       setTraderAddress(isCurrentUserA ? data.userB : data.userA);
     }
   };

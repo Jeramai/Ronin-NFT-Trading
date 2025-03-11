@@ -9,7 +9,7 @@ import { db } from '@/lib/firebase';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { ArrowRight, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import FirebaseHandler from './FirebaseHandler';
+import FirebaseHandler from './firebase/InitHandler';
 import { Spinner } from './ui/spinner';
 
 export default function CodeConnector() {
