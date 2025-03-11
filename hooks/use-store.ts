@@ -11,7 +11,7 @@ interface MainStorage {
   user: User | null;
   setUser: (data: User | null) => void;
   traderAddress: string | null;
-  setTraderAddress: (data: string) => void;
+  setTraderAddress: (data: string | null) => void;
 }
 
 const useMainStore = create<MainStorage>()(
@@ -20,7 +20,7 @@ const useMainStore = create<MainStorage>()(
       user: null,
       setUser: (data: User | null) => set(() => ({ user: data })),
       traderAddress: null,
-      setTraderAddress: (data: string) => set(() => ({ traderAddress: data }))
+      setTraderAddress: (data: string | null) => set(() => ({ traderAddress: data }))
     }),
     {
       name: 'main-storage',

@@ -5,46 +5,71 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import useMainStore from '@/hooks/use-store';
 import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { ArrowRight, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import FirebaseHandler from './FirebaseHandler';
+import { Spinner } from './ui/spinner';
 
 export default function CodeConnector() {
-  const { setTraderAddress } = useMainStore();
+  const { user } = useMainStore();
+  const { toast } = useToast();
 
   const [myCode, setMyCode] = useState<string>('');
   const [inputCode, setInputCode] = useState<string>('');
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [connectedTo, setConnectedTo] = useState<string>('');
+  const [aIsReady, setAIsReady] = useState(false);
+  const [bIsReady, setBIsReady] = useState(false);
 
-  const { toast } = useToast();
-
-  // Generate a random code on component mount
-  useEffect(() => generateNewCode(), []);
-
-  // Function to generate a new random code
-  const generateNewCode = () => {
+  const generateNewCode = async () => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
-    for (let i = 0; i < 6; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    let isUnique = false;
+
+    while (!isUnique) {
+      // Generate a new code
+      result = '';
+      for (let i = 0; i < 6; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+
+      // Check if the code already exists in the database
+      const codeQuery = query(collection(db, 'codes'), where('code', '==', result));
+      const codeSnapshot = await getDocs(codeQuery);
+
+      // If no documents found with this code, it's unique
+      if (codeSnapshot.empty) isUnique = true;
     }
+
     setMyCode(result);
     setIsConnected(false);
     setConnectedTo('');
-  };
 
-  // Function to copy code to clipboard
-  const copyCodeToClipboard = () => {
-    navigator.clipboard.writeText(myCode);
-    toast({
-      title: 'Code copied!',
-      description: 'Your code has been copied to clipboard.',
-      duration: 2000
-    });
-  };
+    // Save the unique code to Firestore
+    const userQuery = query(collection(db, 'codes'), where('userA', '==', user?.connectedAddress));
+    const querySnapshot = await getDocs(userQuery);
 
-  // Function to handle connection attempt
-  const attemptConnection = () => {
+    if (querySnapshot.empty) {
+      await addDoc(collection(db, 'codes'), {
+        code: result,
+        userA: user?.connectedAddress,
+        userB: null,
+        userAReady: false,
+        userBReady: false
+      });
+    } else {
+      const docRef = querySnapshot.docs[0].ref;
+      await updateDoc(docRef, {
+        code: result,
+        userB: null,
+        userAReady: false,
+        userBReady: false
+      });
+    }
+  };
+  const attemptConnection = async () => {
     if (!inputCode) {
       toast({
         title: 'No code entered',
@@ -55,9 +80,6 @@ export default function CodeConnector() {
       return;
     }
 
-    // In a real app, this would check against a database of active codes
-    // For demo purposes, we'll simulate a successful connection
-    // when the input is not the same as the user's own code
     if (inputCode === myCode) {
       toast({
         title: 'Cannot connect to yourself',
@@ -66,111 +88,185 @@ export default function CodeConnector() {
         duration: 2000
       });
     } else {
-      setIsConnected(true);
-      setConnectedTo(inputCode);
-      toast({
-        title: 'Connected!',
-        description: `You are now connected to user with code ${inputCode}.`,
-        duration: 3000
+      const q = query(collection(db, 'codes'), where('code', '==', inputCode), where('userB', '==', null));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        toast({
+          title: 'Invalid code',
+          description: 'The entered code is not valid.',
+          variant: 'destructive',
+          duration: 2000
+        });
+      } else {
+        // Update the document with userB
+        const docRef = querySnapshot.docs[0].ref;
+        await updateDoc(docRef, {
+          userB: user?.connectedAddress // Using the connected address from your user object
+        });
+
+        setIsConnected(true);
+        setConnectedTo(inputCode);
+      }
+    }
+  };
+  const disconnect = async () => {
+    setIsConnected(false);
+    setConnectedTo('');
+    setInputCode('');
+
+    // Remove the code from Firestore
+    const q = query(collection(db, 'codes'), where('code', '==', myCode));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(async (docSnapshot) => {
+      await deleteDoc(doc(db, 'codes', docSnapshot.id));
+    });
+
+    // Remove self from code
+    const q2 = query(collection(db, 'codes'), where('userB', '==', user?.connectedAddress));
+    const querySnapshot2 = await getDocs(q2);
+    querySnapshot2.forEach(async (docSnapshot) => {
+      await updateDoc(doc(db, 'codes', docSnapshot.id), {
+        userB: null,
+        userAReady: false,
+        userBReady: false
+      });
+    });
+
+    generateNewCode();
+  };
+  const startTrading = async () => {
+    const userQuery = query(collection(db, 'codes'), where('code', '==', inputCode || myCode));
+    const querySnapshot = await getDocs(userQuery);
+    if (querySnapshot.empty) return;
+
+    const docData = querySnapshot.docs[0].data();
+    const docRef = querySnapshot.docs[0].ref;
+
+    // Check if user is userA or userB
+    const isUserA = docData.userA === user?.connectedAddress;
+    const isUserB = docData.userB === user?.connectedAddress;
+
+    if (isUserA) {
+      await updateDoc(docRef, {
+        userAReady: true
+      });
+    } else if (isUserB) {
+      await updateDoc(docRef, {
+        userBReady: true
       });
     }
   };
 
-  // Function to disconnect
-  const disconnect = () => {
-    setIsConnected(false);
-    setConnectedTo('');
-    setInputCode('');
+  const copyCodeToClipboard = () => {
+    navigator.clipboard.writeText(myCode);
     toast({
-      title: 'Disconnected',
-      description: 'You have been disconnected.',
+      title: 'Code copied!',
+      description: 'Your code has been copied to clipboard.',
       duration: 2000
     });
   };
 
-  // Initiate the trade
-  const startTrading = () => {
-    setTraderAddress(connectedTo);
-  };
+  // Generate code on init
+  useEffect(() => {
+    generateNewCode();
+  }, []);
+
+  const startTradingDisabled = myCode === connectedTo ? aIsReady : bIsReady;
 
   return (
-    <Card className='shadow-lg rounded-md dark:border-slate-700 dark:bg-slate-900'>
-      <CardHeader>
-        <div className='flex justify-between items-center'>
-          <CardTitle className='flex justify-between items-center'>
-            <span className='mb-1'>Your Connection Code</span>
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className='space-y-6 mb-2'>
-        {/* My code section */}
-        <div className='space-y-2'>
-          <div className='flex items-center gap-2'>
-            <div className='relative flex-1'>
-              <Input
-                value={myCode}
-                readOnly
-                className='text-center text-lg font-mono tracking-wider bg-slate-50 dark:bg-slate-800'
-              />
-              <Button
-                size='icon'
-                variant='ghost'
-                className='absolute right-0 top-1/2 -translate-y-1/2'
-                onClick={copyCodeToClipboard}
-              >
-                <Copy className='h-4 w-4' />
+    <>
+      <Card className='shadow-lg rounded-md dark:border-slate-700 dark:bg-slate-900'>
+        <CardHeader>
+          <div className='flex justify-between items-center'>
+            <CardTitle className='flex justify-between items-center'>
+              <span>Your Connection Code</span>
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className='space-y-6 mb-2'>
+          <div className='space-y-2'>
+            <div className='flex items-center gap-2'>
+              <div className='relative flex-1'>
+                <Input
+                  value={myCode}
+                  readOnly
+                  className='text-center text-lg font-mono tracking-wider bg-slate-50 dark:bg-slate-800'
+                />
+                <Button
+                  size='icon'
+                  variant='ghost'
+                  className='absolute right-0 top-1/2 -translate-y-1/2'
+                  onClick={copyCodeToClipboard}
+                >
+                  <Copy className='h-4 w-4' />
+                </Button>
+              </div>
+              <Button size='icon' variant='outline' onClick={generateNewCode} disabled={isConnected}>
+                <RefreshCw className='h-4 w-4' />
               </Button>
             </div>
-            <Button size='icon' variant='outline' onClick={generateNewCode} disabled={isConnected}>
-              <RefreshCw className='h-4 w-4' />
-            </Button>
+            <p className='text-xs text-slate-500 text-center'>Share this code with someone to let them connect to you</p>
           </div>
-          <p className='text-xs text-slate-500 text-center'>Share this code with someone to let them connect to you</p>
-        </div>
 
-        {/* Connection status */}
-        {isConnected ? (
-          <div className='bg-green-50 p-4 rounded-md border border-green-200 dark:bg-green-900/20 dark:border-green-800'>
-            <h3 className='font-medium text-green-800 dark:text-green-400'>Connected to user</h3>
-            <code className='text-green-700 dark:text-green-300'>{connectedTo}</code>
+          {isConnected ? (
+            <div className='bg-green-50 p-4 rounded-md border border-green-200 dark:bg-green-900/20 dark:border-green-800'>
+              <h3 className='font-medium text-green-800 dark:text-green-400'>Connected to user</h3>
+              <code className='text-green-700 dark:text-green-300'>{connectedTo}</code>
 
-            <div className='flex gap-2 mt-2'>
-              <Button
-                variant='outline'
-                className='w-full border-green-200 text-green-700 hover:bg-green-100 hover:text-green-800 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/50 dark:hover:text-green-300'
-                onClick={disconnect}
-              >
-                Disconnect
-              </Button>
-              <Button onClick={startTrading} className='w-full'>
-                <span>Start trading</span>
-                <ArrowRight className='h-4 w-4' />
-              </Button>
+              <div className='flex gap-2 mt-2'>
+                <Button
+                  variant='outline'
+                  className='w-full border-green-200 text-green-700 hover:bg-green-100 hover:text-green-800 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/50 dark:hover:text-green-300'
+                  onClick={disconnect}
+                >
+                  Disconnect
+                </Button>
+                <Button onClick={startTrading} className='w-full' disabled={startTradingDisabled}>
+                  {startTradingDisabled ? (
+                    <Spinner />
+                  ) : (
+                    <>
+                      <span>Start trading</span>
+                      <ArrowRight className='h-4 w-4' />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className='border-t border-b py-4'>
-            <h3 className='font-medium mb-2'>Connect to someone</h3>
-            <div className='flex gap-2'>
-              <Input
-                placeholder='Enter code'
-                value={inputCode}
-                onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-                className='font-mono'
-                maxLength={6}
-              />
-              <Button onClick={attemptConnection}>
-                <ArrowRight className='h-4 w-4' />
-              </Button>
+          ) : (
+            <div className='border-t border-b py-4'>
+              <h3 className='font-medium mb-2'>Connect to someone</h3>
+              <div className='flex gap-2'>
+                <Input
+                  placeholder='Enter code'
+                  value={inputCode}
+                  onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+                  className='font-mono'
+                  maxLength={6}
+                />
+                <Button onClick={attemptConnection}>
+                  <ArrowRight className='h-4 w-4' />
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className='text-xs text-slate-500 justify-center'>
-        {isConnected
-          ? "You're connected to another user. You can now start trading."
-          : "Enter someone's code to establish a connection."}
-      </CardFooter>
-    </Card>
+          )}
+        </CardContent>
+        <CardFooter className='text-xs text-slate-500 justify-center'>
+          {isConnected
+            ? "You're connected to another user. You can now start trading."
+            : "Enter someone's code to establish a connection."}
+        </CardFooter>
+      </Card>
+
+      <FirebaseHandler
+        myCode={myCode}
+        inputCode={inputCode}
+        setIsConnected={setIsConnected}
+        setConnectedTo={setConnectedTo}
+        setAIsReady={setAIsReady}
+        setBIsReady={setBIsReady}
+      />
+    </>
   );
 }
