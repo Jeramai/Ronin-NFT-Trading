@@ -3,12 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useMainStore from '@/hooks/use-store';
-import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import FirebaseHandler from './firebase/SwapHandler';
 
 // Mock NFT data
@@ -20,7 +19,6 @@ const mockNFTs = [
 
 export default function NFTSelection() {
   const { user, sessionCode, traderAddress } = useMainStore();
-  const { toast } = useToast();
 
   const [selectedNFT, setSelectedNFT] = useState<(typeof mockNFTs)[0] | null>(null);
   const [otherUserNFT, setOtherUserNFT] = useState<(typeof mockNFTs)[0] | null>(null);
@@ -32,6 +30,7 @@ export default function NFTSelection() {
 
   const selectOwnNFT = async () => {
     const _selectedNFT = mockNFTs[Math.floor(Math.random() * mockNFTs.length)];
+    setSelectedNFT(_selectedNFT);
 
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
     const querySnapshot = await getDocs(userQuery);
@@ -51,9 +50,14 @@ export default function NFTSelection() {
       });
     }
 
-    setSelectedNFT(_selectedNFT);
+    setHasAgreed(false);
+    setOtherHasAgreed(false);
+    setHasConfirmed(false);
+    setOtherHasConfirmed(false);
   };
   const resetOwnNFT = async () => {
+    setSelectedNFT(null);
+
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
     const querySnapshot = await getDocs(userQuery);
     if (querySnapshot.empty) return;
@@ -81,6 +85,10 @@ export default function NFTSelection() {
     }
 
     setSelectedNFT(null);
+    setHasAgreed(false);
+    setOtherHasAgreed(false);
+    setHasConfirmed(false);
+    setOtherHasConfirmed(false);
   };
   const agreeTrade = async () => {
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
@@ -113,8 +121,6 @@ export default function NFTSelection() {
     } else {
       await updateDoc(docRef, { userBHasConfirmed: true });
     }
-
-    setHasConfirmed(true);
   };
   const abortTrade = async () => {
     // Remove the code from Firestore
@@ -123,29 +129,22 @@ export default function NFTSelection() {
     querySnapshot.forEach(async (docSnapshot) => {
       await deleteDoc(doc(db, 'codes', docSnapshot.id));
     });
-  };
 
-  // On selected NFT change, reset values
-  useEffect(() => {
-    if (selectedNFT) console.log('Selected NFT:', selectedNFT);
-
+    setSelectedNFT(null);
+    setOtherUserNFT(null);
     setHasAgreed(false);
+    setOtherHasAgreed(false);
     setHasConfirmed(false);
-  }, [selectedNFT]);
-
-  // Action for when both parties confirm the trade
-  useEffect(() => {
-    if (hasConfirmed && otherHasConfirmed) {
-      toast({
-        title: 'Trade confirmed!',
-        description: 'The trade has been confirmed by both parties and will now be processed.',
-        duration: 3000
-      });
-
-      setSelectedNFT(null);
-      setOtherUserNFT(null);
-    }
-  }, [hasConfirmed, otherHasConfirmed]);
+    setOtherHasConfirmed(false);
+  };
+  const onBothConfirm = () => {
+    setSelectedNFT(null);
+    setOtherUserNFT(null);
+    setHasAgreed(false);
+    setOtherHasAgreed(false);
+    setHasConfirmed(false);
+    setOtherHasConfirmed(false);
+  };
 
   return (
     <>
@@ -155,7 +154,7 @@ export default function NFTSelection() {
           <Card className='flex flex-col p-3 w-full shadow-lg dark:border-slate-700 dark:bg-slate-900'>
             <CardHeader className='border-b mb-3 !p-0'>
               <div className='mb-2'>
-                <CardTitle className='flex justify-between mb-1'>
+                <CardTitle className='flex justify-between mb-2'>
                   <span>Your NFT</span>
                   {selectedNFT ? (
                     <button onClick={resetOwnNFT}>
@@ -197,7 +196,7 @@ export default function NFTSelection() {
                 <div className='text-xs text-gray-500'>{traderAddress}</div>
               </div>
             </CardHeader>
-            <CardContent className='flex flex-col items-center justify-center sm:aspect-square min-h-[100px] !p-0'>
+            <CardContent className='flex flex-col items-center justify-center sm:aspect-square h-full min-h-[100px] !p-0'>
               {otherUserNFT ? (
                 <div className='text-center'>
                   <Image
@@ -260,6 +259,7 @@ export default function NFTSelection() {
         setOtherHasAgreed={setOtherHasAgreed}
         setHasConfirmed={setHasConfirmed}
         setOtherHasConfirmed={setOtherHasConfirmed}
+        onBothConfirm={onBothConfirm}
       />
     </>
   );
