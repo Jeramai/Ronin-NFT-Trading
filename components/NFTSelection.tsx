@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useMainStore from '@/hooks/use-store';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ const mockNFTs = [
 ];
 
 export default function NFTSelection() {
-  const { user, sessionCode, traderAddress, setTraderAddress } = useMainStore();
+  const { user, sessionCode, traderAddress } = useMainStore();
   const { toast } = useToast();
 
   const [selectedNFT, setSelectedNFT] = useState<(typeof mockNFTs)[0] | null>(null);
@@ -30,14 +30,92 @@ export default function NFTSelection() {
   const [hasConfirmed, setHasConfirmed] = useState(false);
   const [otherHasConfirmed, setOtherHasConfirmed] = useState(false);
 
-  const resetOwnNFT = () => {
+  const selectOwnNFT = async () => {
+    const _selectedNFT = mockNFTs[Math.floor(Math.random() * mockNFTs.length)];
+
+    const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
+    const querySnapshot = await getDocs(userQuery);
+    if (querySnapshot.empty) return;
+
+    const docData = querySnapshot.docs[0].data();
+    const docRef = querySnapshot.docs[0].ref;
+
+    // Check if user is the host or guest
+    if (user?.connectedAddress === docData.userA) {
+      await updateDoc(docRef, {
+        userANFT: _selectedNFT
+      });
+    } else {
+      await updateDoc(docRef, {
+        userBNFT: _selectedNFT
+      });
+    }
+
+    setSelectedNFT(_selectedNFT);
+  };
+  const resetOwnNFT = async () => {
+    const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
+    const querySnapshot = await getDocs(userQuery);
+    if (querySnapshot.empty) return;
+
+    const docData = querySnapshot.docs[0].data();
+    const docRef = querySnapshot.docs[0].ref;
+
+    // Check if user is the host or guest
+    if (user?.connectedAddress === docData.userA) {
+      await updateDoc(docRef, {
+        userANFT: null,
+        userAHasAgreed: false,
+        userAHasConfirmed: false,
+        userBHasAgreed: false,
+        userBHasConfirmed: false
+      });
+    } else {
+      await updateDoc(docRef, {
+        userBNFT: null,
+        userAHasAgreed: false,
+        userAHasConfirmed: false,
+        userBHasAgreed: false,
+        userBHasConfirmed: false
+      });
+    }
+
     setSelectedNFT(null);
   };
-  const selectOwnNFT = () => {
-    setSelectedNFT(mockNFTs[Math.floor(Math.random() * mockNFTs.length)]);
+  const agreeTrade = async () => {
+    const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
+    const querySnapshot = await getDocs(userQuery);
+    if (querySnapshot.empty) return;
+
+    const docData = querySnapshot.docs[0].data();
+    const docRef = querySnapshot.docs[0].ref;
+
+    // Check if user is the host or guest
+    if (user?.connectedAddress === docData.userA) {
+      await updateDoc(docRef, { userAHasAgreed: true });
+    } else {
+      await updateDoc(docRef, { userBHasAgreed: true });
+    }
+
+    setHasAgreed(true);
   };
-  const confirmTrade = () => setHasConfirmed(true);
-  const agreeTrade = () => setHasAgreed(true);
+  const confirmTrade = async () => {
+    const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
+    const querySnapshot = await getDocs(userQuery);
+    if (querySnapshot.empty) return;
+
+    const docData = querySnapshot.docs[0].data();
+    const docRef = querySnapshot.docs[0].ref;
+
+    // Check if user is the host or guest
+    if (user?.connectedAddress === docData.userA) {
+      await updateDoc(docRef, { userAHasConfirmed: true });
+    } else {
+      await updateDoc(docRef, { userBHasConfirmed: true });
+    }
+
+    setHasConfirmed(true);
+  };
   const abortTrade = async () => {
     // Remove the code from Firestore
     const q = query(collection(db, 'codes'), where('code', '==', sessionCode));
@@ -47,34 +125,6 @@ export default function NFTSelection() {
     });
   };
 
-  // Temp functions
-  useEffect(() => {
-    setHasAgreed(false);
-    setHasConfirmed(false);
-
-    if (selectedNFT) {
-      const t = setTimeout(() => {
-        setOtherUserNFT(mockNFTs[Math.floor(Math.random() * mockNFTs.length)]);
-      }, 1500);
-      return () => clearTimeout(t);
-    }
-  }, [selectedNFT]);
-  useEffect(() => {
-    setOtherHasAgreed(false);
-    if (hasAgreed) {
-      const t = setTimeout(() => setOtherHasAgreed(true), 1500);
-      return () => clearTimeout(t);
-    }
-  }, [hasAgreed]);
-  useEffect(() => {
-    setOtherHasConfirmed(false);
-    if (hasConfirmed) {
-      const t = setTimeout(() => setOtherHasConfirmed(true), 1500);
-      return () => clearTimeout(t);
-    }
-  }, [hasConfirmed]);
-
-  // Real functions
   // On selected NFT change, reset values
   useEffect(() => {
     if (selectedNFT) console.log('Selected NFT:', selectedNFT);
@@ -204,7 +254,13 @@ export default function NFTSelection() {
         </div>
       </div>
 
-      <FirebaseHandler />
+      <FirebaseHandler
+        setOtherUserNFT={setOtherUserNFT}
+        setHasAgreed={setHasAgreed}
+        setOtherHasAgreed={setOtherHasAgreed}
+        setHasConfirmed={setHasConfirmed}
+        setOtherHasConfirmed={setOtherHasConfirmed}
+      />
     </>
   );
 }

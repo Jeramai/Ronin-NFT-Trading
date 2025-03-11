@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import useMainStore from '@/hooks/use-store';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { ArrowRight, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import FirebaseHandler from './firebase/InitHandler';
@@ -55,18 +55,19 @@ export default function CodeConnector() {
       await addDoc(collection(db, 'codes'), {
         code: result,
         userA: user?.connectedAddress,
-        userB: null,
-        userAReady: false,
-        userBReady: false
+        userB: null
       });
     } else {
       const docRef = querySnapshot.docs[0].ref;
-      await updateDoc(docRef, {
-        code: result,
-        userB: null,
-        userAReady: false,
-        userBReady: false
-      });
+      await setDoc(
+        docRef,
+        {
+          code: result,
+          userA: user?.connectedAddress,
+          userB: null
+        },
+        { merge: false }
+      );
     }
   };
   const attemptConnection = async () => {

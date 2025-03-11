@@ -14,11 +14,43 @@ interface FirebaseData {
   userBReady: boolean;
 }
 
-export default function FirebaseHandler() {
+export default function FirebaseHandler({
+  setOtherUserNFT,
+  setHasAgreed,
+  setOtherHasAgreed,
+  setHasConfirmed,
+  setOtherHasConfirmed
+}: Readonly<{
+  setOtherUserNFT: (e: any) => void;
+  setHasAgreed: (e: boolean) => void;
+  setOtherHasAgreed: (e: boolean) => void;
+  setHasConfirmed: (e: boolean) => void;
+  setOtherHasConfirmed: (e: boolean) => void;
+}>) {
   const { user, setTraderAddress } = useMainStore();
   const { toast } = useToast();
 
   // Helper functions to handle different states
+  const handleModifications = async (data: any) => {
+    const isCurrentUserA = data.userA === user?.connectedAddress;
+    const isCurrentUserB = data.userB === user?.connectedAddress;
+
+    if (isCurrentUserB) {
+      setOtherUserNFT(data.userANFT);
+      setOtherHasAgreed(data.userAHasAgreed);
+      setOtherHasConfirmed(data.userAHasConfirmed);
+
+      setHasAgreed(data.userBHasAgreed);
+      setHasConfirmed(data.userBHasConfirmed);
+    } else if (isCurrentUserA) {
+      setOtherUserNFT(data.userBNFT);
+      setOtherHasAgreed(data.userBHasAgreed);
+      setOtherHasConfirmed(data.userBHasConfirmed);
+
+      setHasAgreed(data.userAHasAgreed);
+      setHasConfirmed(data.userAHasConfirmed);
+    }
+  };
   const handleDisconnection = async (isHost: boolean) => {
     toast({
       title: 'Disconnected!',
@@ -26,6 +58,9 @@ export default function FirebaseHandler() {
       duration: 3000
     });
     setTraderAddress('');
+    setOtherUserNFT(false);
+    setOtherHasAgreed(false);
+    setOtherHasConfirmed(false);
   };
 
   useEffect(() => {
@@ -33,7 +68,9 @@ export default function FirebaseHandler() {
       snapshot.docChanges().forEach((change) => {
         const data = change.doc.data() as FirebaseData;
 
-        if (change.type === 'removed') {
+        if (change.type === 'modified') {
+          handleModifications(data);
+        } else if (change.type === 'removed') {
           handleDisconnection(data.userA === user?.connectedAddress);
         }
       });
