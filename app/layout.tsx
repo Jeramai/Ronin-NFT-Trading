@@ -8,8 +8,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Ronin NFT Explorer',
-  description: 'Explore NFTs on the Ronin blockchain',
+  title: 'Ronin NFT Trading',
+  description: 'Trade NFTs on the Ronin blockchain',
   generator: 'v0.dev'
 };
 

@@ -1,17 +1,16 @@
 'use client';
 
 import useMainStore from '@/hooks/use-store';
+import { ConnectorError, ConnectorErrorType, requestRoninWalletConnector, RoninWalletConnector } from '@sky-mavis/tanto-connect';
+import { authorize } from '@sky-mavis/waypoint';
 import { Info, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Spinner } from './ui/spinner';
 
 export default function LoginPage() {
-  const { setUser } = useMainStore();
   const [countdown, setCountdown] = useState(43);
-
-  const loginWithWaypoint = () => setUser({ address: '0xwaypoint', signature: '0x1234567890' });
-  const loginWithWallet = () => setUser({ address: '0xwallet', signature: '0x1234567890' });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,19 +30,8 @@ export default function LoginPage() {
           <h1 className='text-2xl font-bold ml-3'>Log in to Ronin NFT Trading</h1>
         </div>
 
-        <button
-          className='w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-full mb-3'
-          onClick={loginWithWaypoint}
-        >
-          Login with Ronin Waypoint
-        </button>
-
-        <button
-          className='w-full bg-gray-800/50 hover:bg-gray-700/50 text-white font-medium py-3 px-4 rounded-full border border-gray-700 mb-6'
-          onClick={loginWithWallet}
-        >
-          Connect with Ronin Wallet
-        </button>
+        <WayPointButton />
+        <ConnectRoninWalletButton />
 
         <div className='flex items-center mb-6'>
           <div className='flex-grow h-px bg-gray-700'></div>
@@ -111,5 +99,101 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+function WayPointButton() {
+  const { setUser } = useMainStore();
+
+  const loginWithWaypoint = async () => {
+    const result = await authorize({
+      mode: 'popup',
+      clientId: 'PfsE6vhT14GVZ1EXJ1oMGPA8OrlNE4b1',
+      waypointOrigin: 'https://waypoint.roninchain.com'
+    });
+
+    console.debug('🚀 | Authorization Result:', result);
+    // const accounts = result?.accounts || [];
+    // setUser({ accounts });
+  };
+
+  return null;
+  return (
+    <button
+      className='w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-full mb-3'
+      onClick={loginWithWaypoint}
+    >
+      Login with Ronin Waypoint
+    </button>
+  );
+}
+function ConnectRoninWalletButton() {
+  const { setUser } = useMainStore();
+
+  const [connector, setConnector] = useState<RoninWalletConnector | null>(null);
+  const [error, setError] = useState<ConnectorErrorType | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const getRoninWalletConnector = async () => {
+    try {
+      const connector = await requestRoninWalletConnector();
+
+      return connector;
+    } catch (error) {
+      if (error instanceof ConnectorError) {
+        setError(error.name);
+      }
+
+      return null;
+    }
+  };
+
+  const connectRoninWallet = async () => {
+    setIsLoading(true);
+
+    try {
+      if (!connector && error === ConnectorErrorType.PROVIDER_NOT_FOUND) {
+        window.open('https://wallet.roninchain.com', '_blank');
+        return;
+      }
+
+      const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID) || 2020;
+      const connectResult = await connector?.connect(chainId);
+      if (!connectResult) {
+        return;
+      }
+
+      const connectedAddress = connectResult.account;
+      const currentChainId = connectResult.chainId;
+
+      const userAddresses = await connector?.getAccounts();
+      if (userAddresses) {
+        setUser({
+          connectedAddress,
+          userAddresses,
+          currentChainId
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Get wallet connector
+  useEffect(() => {
+    getRoninWalletConnector().then((connector) => {
+      setConnector(connector);
+    });
+  }, []);
+
+  return (
+    <button
+      className='w-full bg-gray-800/50 hover:bg-gray-700/50 text-white font-medium py-3 px-4 rounded-full border border-gray-700 mb-6 flex justify-center'
+      onClick={connectRoninWallet}
+      disabled={isLoading}
+    >
+      {isLoading ? <Spinner /> : 'Connect with Ronin Wallet'}
+    </button>
   );
 }

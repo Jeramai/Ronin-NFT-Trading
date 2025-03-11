@@ -2,26 +2,28 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface User {
-  address: string;
-  signature: string;
+  connectedAddress: string;
+  userAddresses: string[];
+  currentChainId: number;
 }
 interface MainStorage {
-  user: User | undefined;
-  setUser: (data: User) => void;
-  traderAddress: string | undefined;
+  user: User | null;
+  setUser: (data: User | null) => void;
+  traderAddress: string | null;
   setTraderAddress: (data: string) => void;
 }
 
 const useMainStore = create<MainStorage>()(
   persist(
     (set, get) => ({
-      user: undefined,
-      setUser: (data: User) => set(() => ({ user: data })),
-      traderAddress: undefined,
+      user: null,
+      setUser: (data: User | null) => set(() => ({ user: data })),
+      traderAddress: null,
       setTraderAddress: (data: string) => set(() => ({ traderAddress: data }))
     }),
     {
-      name: 'main-storage'
+      name: 'main-storage',
+      partialize: (state) => ({ user: state.user })
     }
   )
 );
