@@ -65,32 +65,36 @@ export default function NFTPicker({
           <DialogTitle>Choose your NFT</DialogTitle>
           <DialogDescription>Select the NFT you would like to trade.</DialogDescription>
         </DialogHeader>
-        <div className='grid grid-cols-2 auto-rows-[50%] auto-cols-[50%] grid-flow-row gap-4 overflow-auto p-2'>
-          {nfts?.map((nft) => {
-            return (
-              <button
-                key={nft.tokenHash}
-                className={`relative aspect-square overflow-hidden rounded-lg
+        <div className='grid grid-cols-2 grid-flow-row gap-4 overflow-auto p-2'>
+          {nfts
+            ?.filter((nft) => nft.metadata?.image ?? nft.media?.originalMediaUrl)
+            ?.map((nft) => {
+              return (
+                <button
+                  key={nft.tokenHash}
+                  className={`relative aspect-square overflow-hidden rounded-lg w-full pb-[100%]
                 ${nft.tokenHash === selected ? 'ring-2 ring-primary ring-offset-2' : ''}`}
-                onClick={() => setSelected(nft.tokenHash)}
-              >
-                <Image
-                  src={nft.media?.originalMediaUrl ?? '/placeholder.svg'}
-                  alt={nft.name ?? 'NFT'}
-                  fill
-                  className='w-full h-full object-cover'
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-2'>
-                  <p className='text-white font-medium'>{nft.name}</p>
-                </div>
-                {nft.tokenHash === selected && (
-                  <div className='absolute top-2 right-2'>
-                    <CheckCircle className='text-primary' size={20} />
+                  onClick={() => setSelected(nft.tokenHash)}
+                >
+                  <Image
+                    src={nft.metadata?.image ?? nft.media?.originalMediaUrl ?? '/placeholder.svg'}
+                    alt={nft.name ?? 'NFT'}
+                    fill
+                    className='w-full h-full object-cover'
+                  />
+                  <div className='absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-2'>
+                    <p title={nft.metadata?.name ?? nft.name} className='text-white font-medium truncate'>
+                      {nft.metadata?.name ?? nft.name}
+                    </p>
                   </div>
-                )}
-              </button>
-            );
-          })}
+                  {nft.tokenHash === selected && (
+                    <div className='absolute top-2 right-2'>
+                      <CheckCircle className='text-primary' size={20} />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
         </div>
 
         {isFetching ? (
