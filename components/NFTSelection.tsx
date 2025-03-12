@@ -25,7 +25,14 @@ export default function NFTSelection() {
   const [otherHasConfirmed, setOtherHasConfirmed] = useState(false);
 
   const selectOwnNFT = async (nftData: any) => {
-    setSelectedNFT(nftData);
+    // Cleanup the nft data
+    const cleanNFT = {
+      imageUrl: nftData.media?.originalMediaUrl ?? '/placeholder.svg',
+      name: nftData.name ?? 'NFT',
+      tokenHash: nftData.tokenHash
+    };
+
+    setSelectedNFT(cleanNFT);
 
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
     const querySnapshot = await getDocs(userQuery);
@@ -37,11 +44,11 @@ export default function NFTSelection() {
     // Check if user is the host or guest
     if (user?.connectedAddress === docData.userA) {
       await updateDoc(docRef, {
-        userANFT: nftData
+        userANFT: cleanNFT
       });
     } else {
       await updateDoc(docRef, {
-        userBNFT: nftData
+        userBNFT: cleanNFT
       });
     }
 
@@ -165,7 +172,7 @@ export default function NFTSelection() {
               {selectedNFT ? (
                 <div className='text-center'>
                   <Image
-                    src={selectedNFT.image || '/placeholder.svg'}
+                    src={selectedNFT.imageUrl ?? '/placeholder.svg'}
                     alt={selectedNFT.name}
                     width={200}
                     height={200}
@@ -175,7 +182,7 @@ export default function NFTSelection() {
                 </div>
               ) : (
                 <button
-                  className='border-4 border-dashed rounded-md w-full h-full flex flex-col items-center justify-center  min-h-[100px]'
+                  className='border-4 border-dashed rounded-md w-full h-full flex flex-col items-center justify-center min-h-[100px]'
                   onClick={() => setShowNFTPicker(true)}
                 >
                   <p className='text-slate-500 dark:text-slate-400'>No NFT selected</p>
@@ -196,7 +203,7 @@ export default function NFTSelection() {
               {otherUserNFT ? (
                 <div className='text-center'>
                   <Image
-                    src={otherUserNFT.image || '/placeholder.svg'}
+                    src={otherUserNFT.imageUrl ?? '/placeholder.svg'}
                     alt={otherUserNFT.name}
                     width={200}
                     height={200}
