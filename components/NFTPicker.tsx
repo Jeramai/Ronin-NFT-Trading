@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import '@/styles/scrollbar.css';
 import { CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 
