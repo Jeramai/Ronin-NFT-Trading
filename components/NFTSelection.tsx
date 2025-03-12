@@ -27,8 +27,8 @@ export default function NFTSelection() {
   const selectOwnNFT = async (nftData: any) => {
     // Cleanup the nft data
     const cleanNFT = {
-      imageUrl: nftData.media?.originalMediaUrl ?? '/placeholder.svg',
-      name: nftData.name ?? 'NFT',
+      imageUrl: nftData.metadata?.image ?? nftData.media?.originalMediaUrl ?? '/placeholder.svg',
+      name: nftData.metadata?.name ?? nftData.name ?? 'NFT',
       tokenHash: nftData.tokenHash
     };
 
