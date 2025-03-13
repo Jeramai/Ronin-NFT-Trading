@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useMainStore from '@/hooks/use-store';
 import { db } from '@/lib/firebase';
-import useUrlPrefix from '@/lib/useUrlPrefix';
+import { getUrlPrefix } from '@/lib/urlPrefix';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
@@ -14,7 +14,7 @@ import NFTPicker from './NFTPicker';
 
 export default function NFTSelection() {
   const { user, sessionCode, traderAddress, setTraderAddress } = useMainStore();
-  const urlPrefix = useUrlPrefix();
+  const urlPrefix = getUrlPrefix();
 
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
   const [otherUserNFT, setOtherUserNFT] = useState<any>(null);

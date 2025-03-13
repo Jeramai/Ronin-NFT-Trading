@@ -1,15 +1,13 @@
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { getUrlPrefix } from '@/lib/urlPrefix';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import type React from 'react';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
-let urlPrefix = '';
-if (process.env.GITHUB_ACTIONS) {
-  urlPrefix = (process.env.GITHUB_REPOSITORY ?? '').replace(/.*?\//, '');
-}
+const urlPrefix = getUrlPrefix();
 
 export const metadata: Metadata = {
   title: 'Ronin NFT Trading',

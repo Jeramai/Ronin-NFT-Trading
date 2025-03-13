@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import useMainStore from '@/hooks/use-store';
-import useUrlPrefix from '@/lib/useUrlPrefix';
+import { getUrlPrefix } from '@/lib/urlPrefix';
 import '@/styles/scrollbar.css';
 import { useEvmWalletNFTs } from '@moralisweb3/next';
 import { CheckCircle } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function NFTPicker({
   onConfirm: (e: any) => void;
 }>) {
   const { user } = useMainStore();
-  const urlPrefix = useUrlPrefix();
+  const urlPrefix = getUrlPrefix();
 
   const requestParams = { address: user?.connectedAddress ?? '', chain: 2020, mediaItems: true, excludeSpam: true };
   const { fetch } = useEvmWalletNFTs();

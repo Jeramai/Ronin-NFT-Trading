@@ -1,7 +1,7 @@
 'use client';
 
 import useMainStore from '@/hooks/use-store';
-import useUrlPrefix from '@/lib/useUrlPrefix';
+import { getUrlPrefix } from '@/lib/urlPrefix';
 import { ConnectorError, ConnectorErrorType, requestRoninWalletConnector, RoninWalletConnector } from '@sky-mavis/tanto-connect';
 import { Info, LogIn } from 'lucide-react';
 import Image from 'next/image';
@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { Spinner } from './ui/spinner';
 
 export default function LoginPage() {
-  const urlPrefix = useUrlPrefix();
+  const urlPrefix = getUrlPrefix();
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center bg-gradient-to-b  text-white p-4'>
@@ -171,7 +171,7 @@ function ConnectRoninWalletButton() {
   );
 }
 function MobileButton() {
-  const urlPrefix = useUrlPrefix();
+  const urlPrefix = getUrlPrefix();
   const [countdown, setCountdown] = useState(60);
 
   useEffect(() => {

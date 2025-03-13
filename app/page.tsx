@@ -5,12 +5,12 @@ import LogoutButton from '@/components/LogoutButton';
 import SwapCode from '@/components/SwapCode';
 import SwapTrade from '@/components/SwapTrade';
 import useMainStore from '@/hooks/use-store';
-import useUrlPrefix from '@/lib/useUrlPrefix';
+import { getUrlPrefix } from '@/lib/urlPrefix';
 import Image from 'next/image';
 
 export default function Home() {
   const { user, traderAddress } = useMainStore();
-  const urlPrefix = useUrlPrefix();
+  const urlPrefix = getUrlPrefix();
 
   if (!user) return <LoginPage />;
   return (
