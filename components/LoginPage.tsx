@@ -28,7 +28,7 @@ export default function LoginPage() {
           <h1 className='text-2xl font-bold ml-3'>Log in to Ronin NFT Trading</h1>
         </div>
 
-        {/* <WayPointButton /> */}
+        <WayPointButton />
         <ConnectRoninWalletButton />
 
         {/* <div className='flex items-center mb-6'>
