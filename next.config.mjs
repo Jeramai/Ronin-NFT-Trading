@@ -4,7 +4,8 @@ let assetPrefix = "";
 let basePath = "";
 
 if (isGithubActions) {
-  const repo = 'Ronin-NFT-Trading';
+  // trim off `<owner>/`
+  const repo = process.env.GITHUB_REPOSITORY.replace(/.*?\//, "");
 
   assetPrefix = `/${repo}/`;
   basePath = `/${repo}`;
@@ -28,8 +29,8 @@ const nextConfig = {
   },
 
   reactStrictMode: false,
-  assetPrefix,
-  basePath,
+  assetPrefix: assetPrefix,
+  basePath: basePath,
 }
 
 export default nextConfig
