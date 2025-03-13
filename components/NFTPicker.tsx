@@ -105,7 +105,7 @@ export default function NFTPicker({
             <div className='text-muted-foreground font-medium italic'>Loading NFT data..</div>
           </div>
         ) : null}
-        <DialogFooter>
+        <DialogFooter className='!flex-row !justify-end gap-3'>
           {!hasNextPage ? (
             <Button onClick={loadMore} disabled={hasNextPage} variant='secondary'>
               Load more

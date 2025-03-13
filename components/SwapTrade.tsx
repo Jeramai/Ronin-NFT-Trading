@@ -1,4 +1,3 @@
-import { Toaster } from '@/components/ui/toaster';
 import useMainStore from '@/hooks/use-store';
 import { Suspense } from 'react';
 import NFTSelection from './NFTSelection';
@@ -24,7 +23,6 @@ export default function SwapTrade() {
           <NFTSelection />
         </Suspense>
       </div>
-      <Toaster />
     </div>
   );
 }

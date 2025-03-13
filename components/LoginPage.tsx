@@ -75,10 +75,10 @@ function WayPointButton() {
     // const accounts = result?.accounts || [];
 
     setUser({
-      connectedAddress: 'pizza',
-      userAddresses: ['pizza', 'banaan'],
+      connectedAddress: '0xcf5b37944c0132ba4dbcdd59ebf33bcd8a590fba',
+      userAddresses: ['0xcf5b37944c0132ba4dbcdd59ebf33bcd8a590fba'],
       currentChainId: 2020,
-      approvedAddresses: ['pizza', 'banaan']
+      approvedAddresses: ['0xcf5b37944c0132ba4dbcdd59ebf33bcd8a590fba']
     });
   };
 

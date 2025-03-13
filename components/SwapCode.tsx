@@ -1,5 +1,4 @@
 import CodeConnector from '@/components/CodeConnector';
-import { Toaster } from '@/components/ui/toaster';
 import { Suspense } from 'react';
 
 export default function SwapCode() {
@@ -13,7 +12,6 @@ export default function SwapCode() {
           <CodeConnector />
         </Suspense>
       </div>
-      <Toaster />
     </div>
   );
 }
