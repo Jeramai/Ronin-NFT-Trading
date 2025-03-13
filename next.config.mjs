@@ -1,8 +1,14 @@
-let userConfig
-try {
-  userConfig = await import('./v0-user-next.config')
-} catch (e) {
-  // ignore error
+const isGithubActions = process.env.GITHUB_ACTIONS || false;
+
+let assetPrefix = "";
+let basePath = "";
+
+if (isGithubActions) {
+  // trim off `<owner>/`
+  const repo = process.env.GITHUB_REPOSITORY.replace(/.*?\//, "");
+
+  assetPrefix = `/${repo}/`;
+  basePath = `/${repo}`;
 }
 
 /** @type {import('next').NextConfig} */
@@ -22,29 +28,9 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
 
-  reactStrictMode: false
-}
-
-mergeConfig(nextConfig, userConfig)
-
-function mergeConfig(nextConfig, userConfig) {
-  if (!userConfig) {
-    return
-  }
-
-  for (const key in userConfig) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
-      nextConfig[key] = {
-        ...nextConfig[key],
-        ...userConfig[key],
-      }
-    } else {
-      nextConfig[key] = userConfig[key]
-    }
-  }
+  reactStrictMode: false,
+  assetPrefix,
+  basePath,
 }
 
 export default nextConfig
