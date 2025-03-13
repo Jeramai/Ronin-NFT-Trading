@@ -12,12 +12,13 @@ export default function LoginPage() {
   return (
     <div className='min-h-screen flex flex-col items-center justify-center bg-gradient-to-b  text-white p-4'>
       <div className='w-full max-w-md'>
+        <Image src='/android-chrome-192x192.png' alt='Ronin NFT Trading' width={192} height={192} className='mx-auto' priority />
         <div className='mb-8 flex items-center'>
           <LogIn className='w-6 h-6' />
           <h1 className='text-2xl font-bold ml-3'>Log in to Ronin NFT Trading</h1>
         </div>
 
-        <WayPointButton />
+        {/* <WayPointButton /> */}
         <ConnectRoninWalletButton />
 
         {/* <div className='flex items-center mb-6'>
