@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import useMainStore from '@/hooks/use-store';
+import useUrlPrefix from '@/lib/useUrlPrefix';
 import '@/styles/scrollbar.css';
 import { useEvmWalletNFTs } from '@moralisweb3/next';
 import { CheckCircle } from 'lucide-react';
@@ -18,6 +19,7 @@ export default function NFTPicker({
   onConfirm: (e: any) => void;
 }>) {
   const { user } = useMainStore();
+  const urlPrefix = useUrlPrefix();
 
   const requestParams = { address: user?.connectedAddress ?? '', chain: 2020, mediaItems: true, excludeSpam: true };
   const { fetch } = useEvmWalletNFTs();
@@ -77,7 +79,7 @@ export default function NFTPicker({
                   onClick={() => setSelected(nft.tokenHash)}
                 >
                   <Image
-                    src={nft.metadata?.image ?? nft.media?.originalMediaUrl ?? '/placeholder.svg'}
+                    src={nft.metadata?.image ?? nft.media?.originalMediaUrl ?? `${urlPrefix}/placeholder.svg`}
                     alt={nft.name ?? 'NFT'}
                     fill
                     className='w-full h-full object-cover'

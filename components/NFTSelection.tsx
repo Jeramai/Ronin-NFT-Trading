@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useMainStore from '@/hooks/use-store';
 import { db } from '@/lib/firebase';
+import useUrlPrefix from '@/lib/useUrlPrefix';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
@@ -13,6 +14,7 @@ import NFTPicker from './NFTPicker';
 
 export default function NFTSelection() {
   const { user, sessionCode, traderAddress, setTraderAddress } = useMainStore();
+  const urlPrefix = useUrlPrefix();
 
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
   const [otherUserNFT, setOtherUserNFT] = useState<any>(null);
@@ -172,7 +174,7 @@ export default function NFTSelection() {
               {selectedNFT ? (
                 <div className='text-center'>
                   <Image
-                    src={selectedNFT.imageUrl ?? '/placeholder.svg'}
+                    src={selectedNFT.imageUrl ?? `${urlPrefix}/placeholder.svg`}
                     alt={selectedNFT.name}
                     width={200}
                     height={200}
@@ -203,7 +205,7 @@ export default function NFTSelection() {
               {otherUserNFT ? (
                 <div className='text-center'>
                   <Image
-                    src={otherUserNFT.imageUrl ?? '/placeholder.svg'}
+                    src={otherUserNFT.imageUrl ?? `${urlPrefix}/placeholder.svg`}
                     alt={otherUserNFT.name}
                     width={200}
                     height={200}

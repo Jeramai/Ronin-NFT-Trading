@@ -5,10 +5,12 @@ import LogoutButton from '@/components/LogoutButton';
 import SwapCode from '@/components/SwapCode';
 import SwapTrade from '@/components/SwapTrade';
 import useMainStore from '@/hooks/use-store';
+import useUrlPrefix from '@/lib/useUrlPrefix';
 import Image from 'next/image';
 
 export default function Home() {
   const { user, traderAddress } = useMainStore();
+  const urlPrefix = useUrlPrefix();
 
   if (!user) return <LoginPage />;
   return (
@@ -17,7 +19,7 @@ export default function Home() {
         <div className='flex justify-between'>
           <div className='flex gap-3 mb-16 sm:mb-3'>
             <div className='relative h-full aspect-square ahidden sm:blocka'>
-              <Image src='/logo-64x64.png' alt='logo' fill className='object-contain' />
+              <Image src={`${urlPrefix}/logo-64x64.png`} alt='logo' fill className='object-contain' />
             </div>
             <h1 className='text-4xl font-bold'>Ronin NFT Trading</h1>
           </div>

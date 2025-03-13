@@ -6,18 +6,22 @@ import type React from 'react';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
+let urlPrefix = '';
+if (process.env.GITHUB_ACTIONS) {
+  urlPrefix = (process.env.GITHUB_REPOSITORY ?? '').replace(/.*?\//, '');
+}
 
 export const metadata: Metadata = {
   title: 'Ronin NFT Trading',
   description: 'Trade NFTs on the Ronin blockchain',
   icons: {
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    apple: [{ url: `${urlPrefix}/apple-touch-icon.png`, sizes: '180x180', type: 'image/png' }],
     icon: [
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' }
+      { url: `${urlPrefix}/favicon-32x32.png`, sizes: '32x32', type: 'image/png' },
+      { url: `${urlPrefix}/favicon-16x16.png`, sizes: '16x16', type: 'image/png' }
     ]
   },
-  manifest: '/site.webmanifest'
+  manifest: `${urlPrefix}/site.webmanifest`
 };
 
 export default function RootLayout({

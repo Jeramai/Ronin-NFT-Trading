@@ -1,6 +1,7 @@
 'use client';
 
 import useMainStore from '@/hooks/use-store';
+import useUrlPrefix from '@/lib/useUrlPrefix';
 import { ConnectorError, ConnectorErrorType, requestRoninWalletConnector, RoninWalletConnector } from '@sky-mavis/tanto-connect';
 import { Info, LogIn } from 'lucide-react';
 import Image from 'next/image';
@@ -9,10 +10,19 @@ import { useEffect, useState } from 'react';
 import { Spinner } from './ui/spinner';
 
 export default function LoginPage() {
+  const urlPrefix = useUrlPrefix();
+
   return (
     <div className='min-h-screen flex flex-col items-center justify-center bg-gradient-to-b  text-white p-4'>
       <div className='w-full max-w-md'>
-        <Image src='/android-chrome-192x192.png' alt='Ronin NFT Trading' width={192} height={192} className='mx-auto' priority />
+        <Image
+          src={`${urlPrefix}/android-chrome-192x192.png`}
+          alt='Ronin NFT Trading'
+          width={192}
+          height={192}
+          className='mx-auto'
+          priority
+        />
         <div className='mb-8 flex items-center'>
           <LogIn className='w-6 h-6' />
           <h1 className='text-2xl font-bold ml-3'>Log in to Ronin NFT Trading</h1>
@@ -161,6 +171,7 @@ function ConnectRoninWalletButton() {
   );
 }
 function MobileButton() {
+  const urlPrefix = useUrlPrefix();
   const [countdown, setCountdown] = useState(60);
 
   useEffect(() => {
@@ -186,7 +197,7 @@ function MobileButton() {
       <div className='flex justify-center mb-2'>
         <div className='bg-white p-2 rounded-lg inline-block'>
           <div className='relative w-48 h-48'>
-            <Image src='/placeholder.svg?height=200&width=200' alt='QR Code' width={200} height={200} className='rounded-md' />
+            <Image src={`${urlPrefix}/placeholder.svg`} alt='QR Code' width={200} height={200} className='rounded-md' />
             <div className='absolute inset-0 flex items-center justify-center'>
               <div className='bg-blue-500 p-1 rounded-md'>
                 <div className='border-2 border-white p-1 rounded-md'>
