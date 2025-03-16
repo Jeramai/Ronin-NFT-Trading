@@ -6,7 +6,7 @@ import { LogOutIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function LogoutButton() {
-  const { setUser, sessionCode, setTraderAddress, setSessionCode } = useMainStore();
+  const { setUser, sessionCode, setTraderAddress, setSessionCode, setTradeIndex } = useMainStore();
 
   const router = useRouter();
 
@@ -18,6 +18,7 @@ export default function LogoutButton() {
         await deleteDoc(doc(db, 'codes', docSnapshot.id));
       });
 
+      setTradeIndex(null);
       setSessionCode(null);
     }
 

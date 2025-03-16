@@ -14,6 +14,8 @@ interface MainStorage {
   setTraderAddress: (data: string | null) => void;
   sessionCode: string | null;
   setSessionCode: (data: string | null) => void;
+  tradeIndex: number | null;
+  setTradeIndex: (data: number | null) => void;
 }
 
 const useMainStore = create<MainStorage>()(
@@ -24,7 +26,9 @@ const useMainStore = create<MainStorage>()(
       traderAddress: null,
       setTraderAddress: (data: string | null) => set(() => ({ traderAddress: data })),
       sessionCode: null,
-      setSessionCode: (data: string | null) => set(() => ({ sessionCode: data }))
+      setSessionCode: (data: string | null) => set(() => ({ sessionCode: data })),
+      tradeIndex: null,
+      setTradeIndex: (data: number | null) => set(() => ({ tradeIndex: data }))
     }),
     {
       name: 'main-storage',

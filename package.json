@@ -1,5 +1,5 @@
 {
-  "name": "my-v0-project",
+  "name": "ronin-nft-trading",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -47,6 +47,7 @@
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
+    "ethers": "^6.13.5",
     "firebase": "^11.4.0",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
@@ -64,7 +65,6 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
-    "web3": "^4.16.0",
     "zod": "^3.24.1",
     "zustand": "^5.0.3"
   },

@@ -9,6 +9,8 @@ import { useEffect } from 'react';
 interface FirebaseHandlerProps {
   myCode: string;
   inputCode: string;
+  aIsReady: boolean;
+  bIsReady: boolean;
   setIsConnected: (connected: boolean) => void;
   setConnectedTo: (code: string) => void;
   setAIsReady: (ready: boolean) => void;
@@ -20,17 +22,20 @@ interface FirebaseData {
   userB: string | null;
   userAReady: boolean;
   userBReady: boolean;
+  tradeIndex: number;
 }
 
 export default function FirebaseHandler({
   myCode,
   inputCode,
+  aIsReady,
+  bIsReady,
   setIsConnected,
   setConnectedTo,
   setAIsReady,
   setBIsReady
 }: Readonly<FirebaseHandlerProps>) {
-  const { user, setTraderAddress, setSessionCode } = useMainStore();
+  const { user, setTraderAddress, setSessionCode, setTradeIndex } = useMainStore();
   const { toast } = useToast();
 
   // Helper functions to handle different states
@@ -51,6 +56,8 @@ export default function FirebaseHandler({
     });
     setIsConnected(false);
     setConnectedTo('');
+    setAIsReady(false);
+    setBIsReady(false);
   };
   const handleUserReady = (isCurrentUser: boolean) => {
     toast({
@@ -95,9 +102,10 @@ export default function FirebaseHandler({
     }
 
     // Update ready states
-    setAIsReady(data.userAReady);
-    setBIsReady(data.userBReady);
+    if (!aIsReady) setAIsReady(data.userAReady);
+    if (!bIsReady) setBIsReady(data.userBReady);
     if (data.userAReady && data.userBReady) {
+      setTradeIndex(data.tradeIndex);
       setSessionCode(data.code);
       setTraderAddress(isCurrentUserA ? data.userB : data.userA);
     }

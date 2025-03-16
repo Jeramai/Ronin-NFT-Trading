@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import useMainStore from '@/hooks/use-store';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
+import { proposeTrade } from '@/lib/web3provider';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { ArrowRight, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -55,7 +56,8 @@ export default function CodeConnector() {
       await addDoc(collection(db, 'codes'), {
         code: result,
         userA: user?.connectedAddress,
-        userB: null
+        userB: null,
+        tradeIndex: null
       });
     } else {
       const docRef = querySnapshot.docs[0].ref;
@@ -64,7 +66,8 @@ export default function CodeConnector() {
         {
           code: result,
           userA: user?.connectedAddress,
-          userB: null
+          userB: null,
+          tradeIndex: null
         },
         { merge: false }
       );
@@ -115,6 +118,9 @@ export default function CodeConnector() {
     setIsConnected(false);
     setConnectedTo('');
     setInputCode('');
+    setMyCode('');
+    setAIsReady(false);
+    setBIsReady(false);
 
     // Remove the code from Firestore
     const q = query(collection(db, 'codes'), where('code', '==', myCode));
@@ -149,13 +155,25 @@ export default function CodeConnector() {
     const isUserB = docData.userB === user?.connectedAddress;
 
     if (isUserA) {
-      await updateDoc(docRef, {
-        userAReady: true
-      });
+      // Call the proposeTrade function on the smart contract
+      try {
+        setAIsReady(true);
+        const tradeIndex = await proposeTrade(docData.userB);
+        await updateDoc(docRef, { userAReady: true, tradeIndex: tradeIndex || 0 });
+      } catch (e) {
+        disconnect();
+
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'An error occurred while proposing the trade.',
+          duration: 3000
+        });
+        console.error(e);
+      }
     } else if (isUserB) {
-      await updateDoc(docRef, {
-        userBReady: true
-      });
+      setBIsReady(true);
+      await updateDoc(docRef, { userBReady: true });
     }
   };
 
@@ -265,6 +283,8 @@ export default function CodeConnector() {
         inputCode={inputCode}
         setIsConnected={setIsConnected}
         setConnectedTo={setConnectedTo}
+        aIsReady={aIsReady}
+        bIsReady={bIsReady}
         setAIsReady={setAIsReady}
         setBIsReady={setBIsReady}
       />

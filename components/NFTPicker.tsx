@@ -18,7 +18,7 @@ export default function NFTPicker({
   onHide: () => void;
   onConfirm: (e: any) => void;
 }>) {
-  const { user } = useMainStore();
+  const { user, tradeIndex } = useMainStore();
   const urlPrefix = getUrlPrefix();
 
   const requestParams = { address: user?.connectedAddress ?? '', chain: 2020, mediaItems: true, excludeSpam: true };
@@ -47,7 +47,7 @@ export default function NFTPicker({
 
         setNfts((n) => [...(n ?? []), ...fetchedNFTs.data]);
         setCursor(fetchedNFTs.cursor ?? '');
-        setHasNextPage(fetchedNFTs.data.length !== 100);
+        setHasNextPage(fetchedNFTs.data?.length === 100);
       })
       .catch((e) => {
         console.error(e);
@@ -106,8 +106,8 @@ export default function NFTPicker({
           </div>
         ) : null}
         <DialogFooter className='!flex-row !justify-end gap-3'>
-          {!hasNextPage ? (
-            <Button onClick={loadMore} disabled={hasNextPage} variant='secondary'>
+          {hasNextPage ? (
+            <Button onClick={loadMore} disabled={isFetching} variant='secondary'>
               Load more
             </Button>
           ) : null}
