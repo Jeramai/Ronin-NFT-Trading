@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useMainStore from '@/hooks/use-store';
 import { db } from '@/lib/firebase';
 import { getUrlPrefix } from '@/lib/urlPrefix';
-import { agreeTrade as agreeTradeSC } from '@/lib/web3provider';
+import { agreeTrade as agreeTradeSC, approveNftTransfer, confirmTrade as confirmTradeSC } from '@/lib/web3provider';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
@@ -14,7 +14,7 @@ import FirebaseHandler from './firebase/SwapHandler';
 import NFTPicker from './NFTPicker';
 
 export default function NFTSelection() {
-  const { user, sessionCode, tradeIndex, traderAddress, setTraderAddress } = useMainStore();
+  const { user, sessionCode, setSessionCode, tradeIndex, setTradeIndex, traderAddress, setTraderAddress } = useMainStore();
   const urlPrefix = getUrlPrefix();
 
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
@@ -107,22 +107,29 @@ export default function NFTSelection() {
     const docRef = querySnapshot.docs[0].ref;
 
     // Do smart contract agree
-    await agreeTradeSC(
-      tradeIndex as number,
-      docData.userANFT.tokenAddress,
-      docData.userANFT.tokenId,
-      docData.userBNFT.tokenAddress,
-      docData.userBNFT.tokenId
-    );
+    try {
+      await agreeTradeSC(
+        tradeIndex as number,
+        docData.userANFT.tokenAddress,
+        docData.userANFT.tokenId,
+        docData.userBNFT.tokenAddress,
+        docData.userBNFT.tokenId
+      );
 
-    // Check if user is the host or guest
-    if (user?.connectedAddress === docData.userA) {
-      await updateDoc(docRef, { userAHasAgreed: true });
-    } else {
-      await updateDoc(docRef, { userBHasAgreed: true });
+      // Check if user is the host or guest
+      if (user?.connectedAddress === docData.userA) {
+        await updateDoc(docRef, { userAHasAgreed: true });
+      } else {
+        await updateDoc(docRef, { userBHasAgreed: true });
+      }
+    } catch (e) {
+      console.error(e);
+      setHasAgreed(false);
     }
   };
   const confirmTrade = async () => {
+    setHasConfirmed(true);
+
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
     const querySnapshot = await getDocs(userQuery);
     if (querySnapshot.empty) return;
@@ -130,11 +137,28 @@ export default function NFTSelection() {
     const docData = querySnapshot.docs[0].data();
     const docRef = querySnapshot.docs[0].ref;
 
-    // Check if user is the host or guest
-    if (user?.connectedAddress === docData.userA) {
-      await updateDoc(docRef, { userAHasConfirmed: true });
-    } else {
-      await updateDoc(docRef, { userBHasConfirmed: true });
+    const isHost = user?.connectedAddress === docData.userA;
+
+    try {
+      // Do NFT contract agree
+      if (isHost) {
+        await approveNftTransfer(docData.userANFT.tokenAddress, docData.userANFT.tokenId);
+      } else {
+        await approveNftTransfer(docData.userBNFT.tokenAddress, docData.userBNFT.tokenId);
+      }
+
+      // Do smart contract agree
+      await confirmTradeSC(tradeIndex as number);
+
+      // Update in DB
+      if (isHost) {
+        await updateDoc(docRef, { userAHasConfirmed: true });
+      } else {
+        await updateDoc(docRef, { userBHasConfirmed: true });
+      }
+    } catch (e) {
+      console.error(e);
+      setHasConfirmed(false);
     }
   };
   const abortTrade = async () => {
@@ -153,13 +177,16 @@ export default function NFTSelection() {
     setOtherHasConfirmed(false);
     setTraderAddress(null);
   };
-  const onBothConfirm = () => {
+  const onBothConfirm = async () => {
     setSelectedNFT(null);
     setOtherUserNFT(null);
     setHasAgreed(false);
     setOtherHasAgreed(false);
     setHasConfirmed(false);
     setOtherHasConfirmed(false);
+    setTraderAddress(null);
+    setSessionCode(null);
+    setTradeIndex(null);
   };
 
   return (
