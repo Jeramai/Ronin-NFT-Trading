@@ -7,8 +7,9 @@ import { useEvmWalletNFTs } from '@moralisweb3/next';
 import { CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { Label } from './ui/label';
 import { Spinner } from './ui/spinner';
-import { Toggle } from './ui/toggle';
+import { Switch } from './ui/switch';
 
 export default function NFTPicker({
   show,
@@ -114,9 +115,10 @@ export default function NFTPicker({
           </div>
         ) : null}
         <DialogFooter className='!flex-row !justify-between gap-3'>
-          <Toggle variant='outline' pressed={filterImageless} onPressedChange={setFilterImageless}>
-            Show imageless NFTs
-          </Toggle>
+          <div className='flex items-center space-x-2'>
+            <Switch id='imageless-nfts' checked={!filterImageless} onCheckedChange={(e) => setFilterImageless(!e)} />
+            <Label htmlFor='imageless-nfts'>Imageless NFTs</Label>
+          </div>
 
           <div className='flex gap-3'>
             {hasNextPage ? (
