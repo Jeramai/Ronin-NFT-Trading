@@ -8,6 +8,7 @@ import { CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Spinner } from './ui/spinner';
+import { Toggle } from './ui/toggle';
 
 export default function NFTPicker({
   show,
@@ -18,10 +19,16 @@ export default function NFTPicker({
   onHide: () => void;
   onConfirm: (e: any) => void;
 }>) {
-  const { user, tradeIndex } = useMainStore();
+  const { user } = useMainStore();
   const urlPrefix = getUrlPrefix();
 
-  const requestParams = { address: user?.connectedAddress ?? '', chain: 2020, mediaItems: true, excludeSpam: true };
+  const chain = process.env.NEXT_PUBLIC_CHAIN_ID ?? 2021;
+  const requestParams = {
+    address: user?.connectedAddress ?? '',
+    chain,
+    mediaItems: true,
+    excludeSpam: true
+  };
   const { fetch } = useEvmWalletNFTs();
 
   const [selected, setSelected] = useState<any>();
@@ -30,6 +37,7 @@ export default function NFTPicker({
   const [cursor, setCursor] = useState<string>('');
   const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [filterImageless, setFilterImageless] = useState<boolean>(false);
 
   const doOnHide = () => {
     onHide();
@@ -43,7 +51,7 @@ export default function NFTPicker({
     setIsFetching(true);
     Promise.resolve(fetch({ ...requestParams, cursor }))
       .then((fetchedNFTs) => {
-        if (!fetchedNFTs?.data?.length) return;
+        if (!fetchedNFTs?.data) return;
 
         setNfts((n) => [...(n ?? []), ...fetchedNFTs.data]);
         setCursor(fetchedNFTs.cursor ?? '');
@@ -69,7 +77,7 @@ export default function NFTPicker({
         </DialogHeader>
         <div className='grid grid-cols-2 grid-flow-row gap-4 overflow-auto p-2'>
           {nfts
-            ?.filter((nft) => nft.metadata?.image ?? nft.media?.originalMediaUrl)
+            ?.filter((nft) => (filterImageless ? nft.metadata?.image ?? nft.media?.originalMediaUrl : true))
             ?.map((nft) => {
               return (
                 <button
@@ -105,15 +113,21 @@ export default function NFTPicker({
             <div className='text-muted-foreground font-medium italic'>Loading NFT data..</div>
           </div>
         ) : null}
-        <DialogFooter className='!flex-row !justify-end gap-3'>
-          {hasNextPage ? (
-            <Button onClick={loadMore} disabled={isFetching} variant='secondary'>
-              Load more
+        <DialogFooter className='!flex-row !justify-between gap-3'>
+          <Toggle variant='outline' pressed={filterImageless} onPressedChange={setFilterImageless}>
+            Show imageless NFTs
+          </Toggle>
+
+          <div className='flex gap-3'>
+            {hasNextPage ? (
+              <Button onClick={loadMore} disabled={isFetching} variant='secondary'>
+                Load more
+              </Button>
+            ) : null}
+            <Button type='submit' disabled={!selected} onClick={doOnclick}>
+              Confirm
             </Button>
-          ) : null}
-          <Button type='submit' disabled={!selected} onClick={doOnclick}>
-            Confirm
-          </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
