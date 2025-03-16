@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useMainStore from '@/hooks/use-store';
 import { db } from '@/lib/firebase';
 import { getUrlPrefix } from '@/lib/urlPrefix';
+import { agreeTrade as agreeTradeSC } from '@/lib/web3provider';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { Loader2, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
@@ -13,7 +14,7 @@ import FirebaseHandler from './firebase/SwapHandler';
 import NFTPicker from './NFTPicker';
 
 export default function NFTSelection() {
-  const { user, sessionCode, traderAddress, setTraderAddress } = useMainStore();
+  const { user, sessionCode, tradeIndex, traderAddress, setTraderAddress } = useMainStore();
   const urlPrefix = getUrlPrefix();
 
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
@@ -31,7 +32,8 @@ export default function NFTSelection() {
     const cleanNFT = {
       imageUrl: nftData.metadata?.image ?? nftData.media?.originalMediaUrl ?? '/placeholder.svg',
       name: nftData.metadata?.name ?? nftData.name ?? 'NFT',
-      tokenHash: nftData.tokenHash
+      tokenAddress: nftData.tokenAddress.checksum,
+      tokenId: nftData.tokenId
     };
 
     setSelectedNFT(cleanNFT);
@@ -95,6 +97,8 @@ export default function NFTSelection() {
     setOtherHasConfirmed(false);
   };
   const agreeTrade = async () => {
+    setHasAgreed(true);
+
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
     const querySnapshot = await getDocs(userQuery);
     if (querySnapshot.empty) return;
@@ -102,14 +106,21 @@ export default function NFTSelection() {
     const docData = querySnapshot.docs[0].data();
     const docRef = querySnapshot.docs[0].ref;
 
+    // Do smart contract agree
+    await agreeTradeSC(
+      tradeIndex as number,
+      docData.userANFT.tokenAddress,
+      docData.userANFT.tokenId,
+      docData.userBNFT.tokenAddress,
+      docData.userBNFT.tokenId
+    );
+
     // Check if user is the host or guest
     if (user?.connectedAddress === docData.userA) {
       await updateDoc(docRef, { userAHasAgreed: true });
     } else {
       await updateDoc(docRef, { userBHasAgreed: true });
     }
-
-    setHasAgreed(true);
   };
   const confirmTrade = async () => {
     const userQuery = query(collection(db, 'codes'), where('code', '==', sessionCode));
@@ -180,7 +191,7 @@ export default function NFTSelection() {
                     height={200}
                     className='rounded-lg mb-2'
                   />
-                  <p className='font-medium'>{selectedNFT.name}</p>
+                  <p className='font-medium'>{`${selectedNFT.tokenId}. ${selectedNFT.name}`}</p>
                 </div>
               ) : (
                 <button
@@ -211,7 +222,7 @@ export default function NFTSelection() {
                     height={200}
                     className='rounded-lg mb-2'
                   />
-                  <p className='font-medium'>{otherUserNFT.name}</p>
+                  <p className='font-medium'>{`${otherUserNFT.tokenId}. ${otherUserNFT.name}`}</p>
                 </div>
               ) : (
                 <p className='text-slate-500 dark:text-slate-400'>Waiting for other user...</p>

@@ -7,7 +7,6 @@ async function connectWallet() {
   const connector = await requestRoninWalletConnector();
   return connector.connect(chainId);
 }
-
 async function getContract() {
   const wallet = await connectWallet();
   const provider = new BrowserProvider(wallet.provider);
@@ -29,6 +28,19 @@ export async function proposeTrade(trader: string) {
     const event = receipt.logs[0];
     const parsedEvent = contract.interface.parseLog(event);
     return parseInt(parsedEvent?.args?.tradeId);
+  } catch (error) {
+    console.error('Error proposing trade:', error);
+    throw error;
+  }
+}
+export async function agreeTrade(tradeIndex: number, tokenAHash: string, tokenAId: number, tokenBHash: string, tokenBId: number) {
+  const contract = await getContract();
+
+  try {
+    // Send the transaction
+    const tx = await contract.agreeTrade(tradeIndex, tokenAHash, tokenAId, tokenBHash, tokenBId);
+    // Wait for transaction to be mined
+    await tx.wait();
   } catch (error) {
     console.error('Error proposing trade:', error);
     throw error;
