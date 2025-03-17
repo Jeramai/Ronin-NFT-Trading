@@ -1,6 +1,6 @@
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json';
 import { ChainIds, requestRoninWalletConnector } from '@sky-mavis/tanto-connect';
-import { BrowserProvider, Contract } from 'ethers';
+import { BrowserProvider, Contract, parseEther } from 'ethers';
 import ABI from './ABI';
 
 async function connectWallet() {
@@ -15,13 +15,14 @@ async function getContract() {
 
   return new Contract(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as string, ABI, signer);
 }
+const callValue = { value: parseEther('0.1') };
 
 export async function agreeTrade(tradeIndex: number, tokenAHash: string, tokenAId: number, tokenBHash: string, tokenBId: number) {
   const contract = await getContract();
 
   try {
     // Send the transaction
-    const tx = await contract.agreeTrade(tradeIndex, tokenAHash, tokenAId, tokenBHash, tokenBId);
+    const tx = await contract.agreeTrade(tradeIndex, tokenAHash, tokenAId, tokenBHash, tokenBId, callValue);
     // Wait for transaction to be mined
     await tx.wait();
   } catch (error) {
@@ -34,7 +35,7 @@ export async function confirmTrade(tradeIndex: number) {
 
   try {
     // Send the transaction
-    const tx = await contract.confirmTrade(tradeIndex);
+    const tx = await contract.confirmTrade(tradeIndex, callValue);
     // Wait for transaction to be mined
     await tx.wait();
   } catch (error) {

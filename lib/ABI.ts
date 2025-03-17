@@ -111,7 +111,7 @@ const ABI = [
     ],
     name: 'agreeTrade',
     outputs: [],
-    stateMutability: 'nonpayable',
+    stateMutability: 'payable',
     type: 'function'
   },
   {
@@ -124,7 +124,7 @@ const ABI = [
     ],
     name: 'confirmTrade',
     outputs: [],
-    stateMutability: 'nonpayable',
+    stateMutability: 'payable',
     type: 'function'
   },
   {
@@ -225,7 +225,7 @@ const ABI = [
     outputs: [
       {
         internalType: 'uint256',
-        name: '',
+        name: 'tradeId',
         type: 'uint256'
       }
     ],
