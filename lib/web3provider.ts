@@ -16,24 +16,6 @@ async function getContract() {
   return new Contract(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as string, ABI, signer);
 }
 
-export async function proposeTrade(trader: string) {
-  const contract = await getContract();
-
-  try {
-    // Send the transaction
-    const tx = await contract.proposeTrade(trader);
-    // Wait for transaction to be mined
-    const receipt = await tx.wait();
-
-    // Get the trade ID from the event
-    const event = receipt.logs[0];
-    const parsedEvent = contract.interface.parseLog(event);
-    return parseInt(parsedEvent?.args?.tradeId);
-  } catch (error) {
-    console.error('Error proposing trade:', error);
-    throw error;
-  }
-}
 export async function agreeTrade(tradeIndex: number, tokenAHash: string, tokenAId: number, tokenBHash: string, tokenBId: number) {
   const contract = await getContract();
 

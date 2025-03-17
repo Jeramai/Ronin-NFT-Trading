@@ -1,5 +1,10 @@
 const ABI = [
   {
+    inputs: [],
+    stateMutability: 'nonpayable',
+    type: 'constructor'
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -117,19 +122,6 @@ const ABI = [
         type: 'uint256'
       }
     ],
-    name: 'cancelTrade',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function'
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '_tradeId',
-        type: 'uint256'
-      }
-    ],
     name: 'confirmTrade',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -198,6 +190,11 @@ const ABI = [
             type: 'bool'
           },
           {
+            internalType: 'uint256',
+            name: 'createdAt',
+            type: 'uint256'
+          },
+          {
             internalType: 'enum NftSwap.TradeStatus',
             name: 'status',
             type: 'uint8'
@@ -213,6 +210,11 @@ const ABI = [
   },
   {
     inputs: [
+      {
+        internalType: 'address',
+        name: '_fromAddress',
+        type: 'address'
+      },
       {
         internalType: 'address',
         name: '_toAddress',
@@ -289,6 +291,11 @@ const ABI = [
         internalType: 'bool',
         name: 'toHasConfirmed',
         type: 'bool'
+      },
+      {
+        internalType: 'uint256',
+        name: 'createdAt',
+        type: 'uint256'
       },
       {
         internalType: 'enum NftSwap.TradeStatus',

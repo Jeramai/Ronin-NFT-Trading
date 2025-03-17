@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import useMainStore from '@/hooks/use-store';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { proposeTrade } from '@/lib/web3provider';
+import { proposeTrade } from '@/lib/web3provider-private';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { ArrowRight, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -158,7 +158,7 @@ export default function CodeConnector() {
       // Call the proposeTrade function on the smart contract
       try {
         setAIsReady(true);
-        const tradeIndex = await proposeTrade(docData.userB);
+        const tradeIndex = await proposeTrade(docData.userA, docData.userB);
         await updateDoc(docRef, { userAReady: true, tradeIndex: tradeIndex || 0 });
       } catch (e) {
         disconnect();
