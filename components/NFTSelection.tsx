@@ -218,7 +218,7 @@ export default function NFTSelection() {
                     height={200}
                     className='rounded-lg mb-2'
                   />
-                  <p className='font-medium'>{`${selectedNFT.tokenId}. ${selectedNFT.name}`}</p>
+                  <p className='font-medium'> {selectedNFT.name} </p>
                 </div>
               ) : (
                 <button
@@ -249,7 +249,7 @@ export default function NFTSelection() {
                     height={200}
                     className='rounded-lg mb-2'
                   />
-                  <p className='font-medium'>{`${otherUserNFT.tokenId}. ${otherUserNFT.name}`}</p>
+                  <p className='font-medium'> {otherUserNFT.name} </p>
                 </div>
               ) : (
                 <p className='text-slate-500 dark:text-slate-400'>Waiting for other user...</p>

@@ -95,7 +95,7 @@ export default function NFTPicker({
                   />
                   <div className='absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-2'>
                     <p title={nft.metadata?.name ?? nft.name} className='text-white font-medium truncate'>
-                      {`${nft.tokenId}. ${nft.metadata?.name ?? nft.name}`}
+                      {nft.metadata?.name ?? nft.name}
                     </p>
                   </div>
                   {nft.tokenHash === selected && (
