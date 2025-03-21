@@ -3,6 +3,7 @@
 import useMainStore from '@/hooks/use-store';
 import { getUrlPrefix } from '@/lib/urlPrefix';
 import { ConnectorError, ConnectorErrorType, requestRoninWalletConnector, RoninWalletConnector } from '@sky-mavis/tanto-connect';
+import { WaypointProvider } from '@sky-mavis/waypoint';
 import { Info, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -28,7 +29,7 @@ export default function LoginPage() {
           <h1 className='text-2xl font-bold ml-3'>Log in to Ronin NFT Trading</h1>
         </div>
 
-        {/* <WayPointButton /> */}
+        <WayPointButton />
         <ConnectRoninWalletButton />
 
         {/* <div className='flex items-center mb-6'>
@@ -65,20 +66,17 @@ function WayPointButton() {
   const { setUser } = useMainStore();
 
   const loginWithWaypoint = async () => {
-    // const result = await authorize({
-    //   mode: 'popup',
-    //   clientId: 'PfsE6vhT14GVZ1EXJ1oMGPA8OrlNE4b1',
-    //   waypointOrigin: 'https://waypoint.roninchain.com'
-    // });
+    const waypointProvider = WaypointProvider.create({
+      clientId: process.env.NEXT_PUBLIC_WAYPOINT_CLIENT_ID as string,
+      chainId: (process.env.NEXT_PUBLIC_CHAIN_ID ?? 2021) as number
+    });
 
-    // console.debug('🚀 | Authorization Result:', result);
-    // const accounts = result?.accounts || [];
-
+    const result = await waypointProvider.connect();
     setUser({
-      connectedAddress: '0xcf5b37944c0132ba4dbcdd59ebf33bcd8a590fba',
-      userAddresses: ['0xcf5b37944c0132ba4dbcdd59ebf33bcd8a590fba'],
-      currentChainId: 2020,
-      approvedAddresses: ['0xcf5b37944c0132ba4dbcdd59ebf33bcd8a590fba']
+      connectedAddress: result.address,
+      userAddresses: [result.address],
+      currentChainId: waypointProvider.chainId,
+      approvedAddresses: [result.address]
     });
   };
 

@@ -15,7 +15,7 @@ async function getContract() {
 
   return new Contract(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as string, ABI, signer);
 }
-const callValue = { value: parseEther('0.1') };
+const callValue = { value: parseEther('0.05') };
 
 export async function agreeTrade(tradeIndex: number, tokenAHash: string, tokenAId: number, tokenBHash: string, tokenBId: number) {
   const contract = await getContract();
